@@ -19,10 +19,13 @@ startTime = time.time()
 mapOutputPath = r'/Users/david/Documents/python scripts/map/map.html'
 # Specify path of failed Map marker txt file
 failedMarkersTxtFile = '/Users/david/Documents/python scripts/map/\
-    failed_markers.txt'
+failed_markers.txt'
 
 # SQL limit
-SqlLimit = "500"
+SqlLimit = "50"
+
+# Give a name for geopy
+userAgent = "Dave"
 
 
 # class to support printing to terminal in colour
@@ -68,7 +71,10 @@ cursor.close()
 db.close()
 print("Database Connection Closed.")
 
-geolocator = Nominatim(user_agent="Dave")
+# Specify agent for geopy
+geolocator = Nominatim(user_agent=userAgent)
+
+# Use partial() to allow partial address lookup
 geocode = partial(geolocator.geocode, language="en")
 
 # define map
@@ -81,6 +87,7 @@ m = folium.Map(
 markerSuccess = 0
 markerFail = 0
 
+# Track Failed Map Markers
 failedMarkers = []
 
 # loop through SQL rows
@@ -89,6 +96,7 @@ for data in result:
     name = data[0]
     print("Constructing Map Marker for: " + name)
 
+    # Assign variable name for selected SQL columns
     addressOne = data[1]
     addressTwo = data[2]
     town = data[3]
@@ -108,7 +116,7 @@ for data in result:
     blankToEmptyString(
         [name, addressOne, addressTwo, town, county, pcode, country])
 
-    # construct address (town + county + UK)
+    # construct address (name + address line 1 + postcode)
     address = name + " " + addressOne + " " + pcode
 
     # get long/lat from address
@@ -117,22 +125,32 @@ for data in result:
     # if unable to get long/lat
     if longLat is None:
 
-        print(bcolors.FAIL + rowId + ">> Map Marker Failed to initialise (" +
-              name + ")" + bcolors.ENDC)
+        # Notify Failed Map Marker in console
+        print(bcolors.FAIL + str(rowId) +
+              ">> Map Marker Failed to initialise (" + name + ")" +
+              bcolors.ENDC)
+
+        # Keep track of total Failed Map Markers
         markerFail += 1
 
+        # Add id of Failed Map Marker to markerFail
         failedMarkers.append(rowId)
 
     else:
+
         lon = longLat.longitude
         lat = longLat.latitude
 
         tooltipMeta = name
 
+        # Add Map Marker to Map
         folium.Marker(location=[lat, lon], tooltip=tooltipMeta).add_to(m)
 
-        print(bcolors.OKGREEN + rowId + ">> Map Marker Created (" + name +
+        # Notify user of Added Map Marker in console
+        print(bcolors.OKGREEN + str(rowId) + ">> Map Marker Created (" + name +
               ")" + bcolors.ENDC)
+
+        # Keep track of total Added Map Markers
         markerSuccess += 1
 
 # Print total Successful Map Markers
@@ -142,12 +160,6 @@ print("\n" + bcolors.OKGREEN + str(markerSuccess) + " Markers added\n" +
 # Print total Failed Map Markers
 print(bcolors.FAIL + str(markerFail) + " Markers failed to initialise" +
       bcolors.ENDC + "\n")
-
-# Print percentage of Sucessful Map Markers
-percentageSuccess = str(
-    (markerSuccess % (markerSuccess + markerFail)) * 100) + "%"
-print(bcolors.WARNING + percentageSuccess + " Schools Successfully added" +
-      bcolors.ENDC)
 
 # create text file and fill with failed map marker id's
 
@@ -173,7 +185,14 @@ m.save(mapOutputPath)
 if os.path.exists(mapOutputPath):
     print(bcolors.OKGREEN + "\nSaved map > " + mapOutputPath + bcolors.ENDC)
 else:
-    print(bcolors.FAIL + "\nFailed to create " + mapOutputPath + bcolors.ENDC)
+    print(bcolors.FAIL + "\nFailed to create " + mapOutputPath + bcolors.ENDC +
+          "\n\n")
+
+# Print percentage of Sucessful Map Markers
+percentageSuccess = str(
+    ((markerSuccess / (markerSuccess + markerFail))) * 100) + "%"
+print(bcolors.WARNING + percentageSuccess + " Schools Successfully added" +
+      bcolors.ENDC)
 
 # Finally, Format and Print Script execution time
 scriptExecutionTime = (time.time() - startTime)
