@@ -1,6 +1,11 @@
 # UK-School-Map
 A Map of *almost* all Educational Schools, Colleges, and Universities in the UK. The map clusters Schools that are in close proximity, relative to the map zoom level.
 
+## Example Output
+generateMap.py outputs a .html file with a map of Schools, Colleges, and Universities in the UK. Here is an example image of the outputted html file content:
+
+![Map.html](https://github.com/dmumford/UK-School-Map/raw/main/example+output.png?raw=true)
+
 ## Background
 This is one of the files from a larger project I made. The project involved scraping School, College, and University
 information from the interwebs (Names, addresses, URLs, etc..), and storing them in an SQL database. This resulted in a table with over 40,000 records.
@@ -23,5 +28,3 @@ You will need to change the MySQL credentials (lines 45-49). You will also need 
 6. postcode (aka Zip code)
 7. country
 8. id (unique row id)
-
-![Map.html](https://github.com/dmumford/UK-School-Map/raw/main/example+output.png?raw=true)
